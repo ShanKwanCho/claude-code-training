@@ -19,9 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/Select"
-import { CARD_CATEGORIES, CURRENCIES } from "@/data/cards"
-import { CardCategory, Currency } from "@/data/types"
-import { maskLast4 } from "@/lib/cards"
+import { Currency } from "@/data/types"
+import {
+  CARD_CATEGORIES,
+  CATEGORY_LABELS,
+  CURRENCIES,
+  maskLast4,
+} from "@/lib/cards"
 import { formatMoney, parseAmountToMinorUnits } from "@/lib/money"
 import { Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -39,14 +43,6 @@ import { useState } from "react"
  * dropped when that screen closes. It is not stored, not put in the URL, and
  * not written anywhere it could be read again.
  */
-
-const CATEGORY_LABELS: Record<CardCategory, string> = {
-  advertising: "Advertising",
-  software: "Software",
-  travel: "Travel",
-  contractors: "Contractors",
-  supplies: "Supplies",
-}
 
 const NO_CATEGORY = "none"
 

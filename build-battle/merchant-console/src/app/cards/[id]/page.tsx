@@ -2,8 +2,7 @@ import { Divider } from "@/components/Divider"
 import { StatusBadge } from "@/components/ui/payments/StatusBadge"
 import { cardById } from "@/data/cards"
 import { merchantById } from "@/data/merchants"
-import { CardCategory } from "@/data/types"
-import { maskLast4 } from "@/lib/cards"
+import { CATEGORY_LABELS, maskLast4 } from "@/lib/cards"
 import { formatInZone } from "@/lib/dates"
 import { formatMoney } from "@/lib/money"
 import { cx } from "@/lib/utils"
@@ -11,22 +10,32 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { CardActions } from "../card-actions"
 
-const CATEGORY_LABELS: Record<CardCategory, string> = {
-  advertising: "Advertising",
-  software: "Software",
-  travel: "Travel",
-  contractors: "Contractors",
-  supplies: "Supplies",
-}
-
 /**
  * Tailwind cannot build a class name from a number at runtime, so the bar
  * snaps to the nearest five percent. The exact figure is written beside it.
  */
 const WIDTHS = [
-  "w-0", "w-[5%]", "w-[10%]", "w-[15%]", "w-[20%]", "w-[25%]", "w-[30%]",
-  "w-[35%]", "w-[40%]", "w-[45%]", "w-[50%]", "w-[55%]", "w-[60%]", "w-[65%]",
-  "w-[70%]", "w-[75%]", "w-[80%]", "w-[85%]", "w-[90%]", "w-[95%]", "w-full",
+  "w-0",
+  "w-[5%]",
+  "w-[10%]",
+  "w-[15%]",
+  "w-[20%]",
+  "w-[25%]",
+  "w-[30%]",
+  "w-[35%]",
+  "w-[40%]",
+  "w-[45%]",
+  "w-[50%]",
+  "w-[55%]",
+  "w-[60%]",
+  "w-[65%]",
+  "w-[70%]",
+  "w-[75%]",
+  "w-[80%]",
+  "w-[85%]",
+  "w-[90%]",
+  "w-[95%]",
+  "w-full",
 ]
 
 /** Past this share of the limit, the bar warns rather than reassures. */
@@ -112,9 +121,7 @@ export default async function CardDetail({
         <p
           className={cx(
             "mt-2 text-sm",
-            amber
-              ? "text-amber-700 dark:text-amber-500"
-              : "text-gray-500",
+            amber ? "text-amber-700 dark:text-amber-500" : "text-gray-500",
           )}
         >
           {percent}% used · {formatMoney(remaining, card.currency)} left

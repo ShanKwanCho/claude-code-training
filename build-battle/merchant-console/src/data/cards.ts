@@ -1,10 +1,8 @@
-import {
-  canTransition,
-  generateCardNumber,
-  lastFour,
-} from "@/lib/cards"
+import { generateCardNumber, lastFour } from "@/lib/card-number"
+import { canTransition } from "@/lib/cards"
 import { merchantById } from "./merchants"
 import { store } from "./store"
+import { CARD_CATEGORIES, CURRENCIES, MAX_SPEND_LIMIT } from "@/lib/cards"
 import { Card, CardCategory, CardStatus, Currency } from "./types"
 
 /**
@@ -12,19 +10,6 @@ import { Card, CardCategory, CardStatus, Currency } from "./types"
  * well, so the route handlers stay thin and the boundaries stay testable
  * without standing up HTTP.
  */
-
-/** The largest limit ops may set, in minor units: 5,000,000. */
-export const MAX_SPEND_LIMIT = 5_000_000
-
-export const CURRENCIES: readonly Currency[] = ["USD", "EUR", "GBP"]
-
-export const CARD_CATEGORIES: readonly CardCategory[] = [
-  "advertising",
-  "software",
-  "travel",
-  "contractors",
-  "supplies",
-]
 
 const NICKNAME_MAX_LENGTH = 60
 
@@ -36,7 +21,11 @@ export type Result<T> =
   | { ok: true; value: T }
   | { ok: false; status: number; error: string; field?: string }
 
-const fail = (status: number, error: string, field?: string): Result<never> => ({
+const fail = (
+  status: number,
+  error: string,
+  field?: string,
+): Result<never> => ({
   ok: false,
   status,
   error,
@@ -106,14 +95,24 @@ export function validateIssueInput(body: unknown): Result<IssueCardInput> {
 
   const currency = input.currency
   if (!CURRENCIES.includes(currency as Currency)) {
-    return fail(400, `Currency must be one of ${CURRENCIES.join(", ")}.`, "currency")
+    return fail(
+      400,
+      `Currency must be one of ${CURRENCIES.join(", ")}.`,
+      "currency",
+    )
   }
 
   const raw = input.category
   const category =
-    raw === undefined || raw === null || raw === "" ? null : (raw as CardCategory)
+    raw === undefined || raw === null || raw === ""
+      ? null
+      : (raw as CardCategory)
   if (category !== null && !CARD_CATEGORIES.includes(category)) {
-    return fail(400, "That is not a category a card can be locked to.", "category")
+    return fail(
+      400,
+      "That is not a category a card can be locked to.",
+      "category",
+    )
   }
 
   return {

@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: "Expected a JSON body." }, { status: 400 })
+    return NextResponse.json(
+      { error: "Expected a JSON body." },
+      { status: 400 },
+    )
   }
 
   const validated = validateIssueInput(body)
@@ -31,5 +34,12 @@ export async function POST(request: NextRequest) {
   }
 
   const { card, cardNumber } = issueCard(validated.value)
-  return NextResponse.json({ card, cardNumber }, { status: 201 })
+
+  // The one response that carries a full number is also the one response that
+  // must not be written down on the way back. Nothing between here and the
+  // success screen gets to keep a copy.
+  return NextResponse.json(
+    { card, cardNumber },
+    { status: 201, headers: { "cache-control": "no-store" } },
+  )
 }

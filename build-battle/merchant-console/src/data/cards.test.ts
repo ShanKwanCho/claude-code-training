@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { Card, CardStatus } from "./types"
+import { CARD_CATEGORIES, MAX_SPEND_LIMIT } from "@/lib/cards"
 import {
-  CARD_CATEGORIES,
   IssueCardInput,
-  MAX_SPEND_LIMIT,
   cardById,
   issueCard,
   listCards,
@@ -106,9 +105,10 @@ describe("validateIssueInput", () => {
     for (const category of CARD_CATEGORIES) {
       expect(validateIssueInput({ ...valid, category }).ok).toBe(true)
     }
-    expect(
-      validateIssueInput({ ...valid, category: "crypto" }),
-    ).toMatchObject({ ok: false, field: "category" })
+    expect(validateIssueInput({ ...valid, category: "crypto" })).toMatchObject({
+      ok: false,
+      field: "category",
+    })
   })
 })
 

@@ -5,7 +5,7 @@
 
 **Ticket:** [NWP-201](../tickets/NWP-201.md)
 **Author:** Shan Kwan Cho
-**Status:** building
+**Status:** done
 
 ## Problem
 
@@ -57,8 +57,10 @@ The full number exists in exactly one variable, inside `issueCard`, long enough 
 | File | Add or change | Why |
 | --- | --- | --- |
 | `src/data/types.ts` | change | `CardStatus`, `CardCategory`, `Card`, `CardEvent`, reusing the existing `Currency` |
-| `src/lib/cards.ts` | add | `generateCardNumber`, `isLuhnValid`, `luhnCheckDigit`, `maskLast4`, `canTransition` — pure, no store import |
-| `src/lib/cards.test.ts` | add | Luhn validity across many draws, the `4242` BIN, tampered-digit rejection, masking, every legal and illegal transition |
+| `src/lib/card-number.ts` | add | `generateCardNumber`, `isLuhnValid`, `luhnCheckDigit`, `lastFour`, `TEST_BIN`. **Server only** — see the departure note below |
+| `src/lib/card-number.test.ts` | add | Luhn validity across many draws, the `4242` BIN, tampered-digit and transposition rejection |
+| `src/lib/cards.ts` | add | The client-safe half: `maskLast4`, `canTransition`, and the allowlists and labels the form and the API both validate against |
+| `src/lib/cards.test.ts` | add | Every legal and illegal transition, masking, and that every category has a label |
 | `src/data/generate.ts` | change | Seed cards from the existing PRNG and `pad()` id convention |
 | `src/data/store.ts` | change | `cards: Card[]` on `interface Store` and in `createStore()` |
 | `src/data/cards.ts` | add | The single card access module: `listCards`, `cardById`, `validateIssueInput`, `issueCard`, `setCardStatus` |
@@ -111,6 +113,13 @@ The full number exists in exactly one variable, inside `issueCard`, long enough 
 - Real card network calls.
 - Editing a card's limit after issue — NWP-202.
 - Authorising spend against a card. Seeded cards carry a `spent` figure so the progress bar has something real to draw; nothing in this ticket increments it.
+
+## Where the build departed from this plan
+
+Both departures were found by checking the built output rather than by reading the code, and both are in the pull request.
+
+1. **`src/lib/cards.ts` was split in two.** The plan had one pure module holding both the generator and the masking helper. That was wrong: `issue-card-form.tsx` is a client component, and importing `maskLast4` and the allowlists from modules that also reach the generator and the store put `generateCardNumber`, the `4242` BIN, the seed PRNG, and the whole merchant array into the `/cards` browser bundle — a direct violation of "Generate on the server. A card number produced in the browser is a bug." Generation now lives in `src/lib/card-number.ts`, which no client component imports; `src/lib/cards.ts` holds only what is safe to ship. Verified by grepping `.next/static/chunks/` after a build.
+2. **Cards keep a history.** Not in the plan. Each card carries a timestamped list of what happened to it, rendered on the detail page in the same shape as the payment timeline, because "what happened to this card last Tuesday" is the second question ops asks.
 
 ## Open questions
 

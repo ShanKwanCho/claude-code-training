@@ -1,83 +1,22 @@
 import { describe, expect, it } from "vitest"
 import { CardStatus } from "@/data/types"
 import {
+  CARD_CATEGORIES,
   CARD_STATUSES,
-  TEST_BIN,
+  CATEGORY_LABELS,
+  CURRENCIES,
   canTransition,
-  generateCardNumber,
-  isLuhnValid,
-  lastFour,
-  luhnCheckDigit,
   maskLast4,
 } from "./cards"
 
 /**
- * Two things here are worth a test rather than a code read. A generator that
- * drifts off the 4242 BIN puts something PAN-shaped in the repository, and a
- * state machine that leaks one illegal edge brings a cancelled card back to
- * life. Both are cheap to assert and expensive to discover in review.
+ * The state machine is the half of the card rules a UI cannot be trusted with:
+ * one leaked edge brings a cancelled card back to life. The rest of this file
+ * pins the vocabulary the form and the API validate against, so the two cannot
+ * drift apart without a test going red.
  */
 
-describe("luhnCheckDigit", () => {
-  it("produces the digit that makes the whole number check out", () => {
-    // 4242424242424242 is the canonical test PAN: payload 424242424242424,
-    // check digit 2.
-    expect(luhnCheckDigit("424242424242424")).toBe(2)
-  })
-})
-
-describe("isLuhnValid", () => {
-  it("accepts a number carrying the check digit its payload implies", () => {
-    expect(isLuhnValid("4242424242424242")).toBe(true)
-  })
-
-  it("rejects a number with a tampered digit", () => {
-    expect(isLuhnValid("4242424242424243")).toBe(false)
-  })
-
-  it("rejects anything that is not all digits", () => {
-    expect(isLuhnValid("4242-4242-4242-4242")).toBe(false)
-    expect(isLuhnValid("")).toBe(false)
-  })
-})
-
-describe("generateCardNumber", () => {
-  const numbers = Array.from({ length: 500 }, () => generateCardNumber())
-
-  it("always starts on the test BIN", () => {
-    for (const number of numbers) {
-      expect(number.startsWith(TEST_BIN)).toBe(true)
-    }
-  })
-
-  it("always produces sixteen digits", () => {
-    for (const number of numbers) {
-      expect(number).toMatch(/^\d{16}$/)
-    }
-  })
-
-  it("always carries a valid Luhn check digit", () => {
-    for (const number of numbers) {
-      expect(isLuhnValid(number)).toBe(true)
-    }
-  })
-
-  it("is deterministic when handed a deterministic source", () => {
-    const fixed = () => 0.5
-    expect(generateCardNumber(fixed)).toBe(generateCardNumber(fixed))
-  })
-
-  it("stays valid at the extremes of its random source", () => {
-    expect(isLuhnValid(generateCardNumber(() => 0))).toBe(true)
-    expect(isLuhnValid(generateCardNumber(() => 0.999999))).toBe(true)
-  })
-})
-
-describe("lastFour and maskLast4", () => {
-  it("keeps only the last four digits", () => {
-    expect(lastFour("4242424242429876")).toBe("9876")
-  })
-
+describe("maskLast4", () => {
   it("masks with the same bullets the payments table uses", () => {
     expect(maskLast4("4242")).toBe("•••• 4242")
   })
@@ -119,5 +58,20 @@ describe("canTransition", () => {
       ["frozen", "active"],
       ["frozen", "cancelled"],
     ])
+  })
+})
+
+describe("the allowlists", () => {
+  it("offers exactly the three currencies the console supports", () => {
+    expect(CURRENCIES).toEqual(["USD", "EUR", "GBP"])
+  })
+
+  it("gives every category a label, so the form cannot render a blank", () => {
+    for (const category of CARD_CATEGORIES) {
+      expect(CATEGORY_LABELS[category]).toBeTruthy()
+    }
+    expect(Object.keys(CATEGORY_LABELS).sort()).toEqual(
+      [...CARD_CATEGORIES].sort(),
+    )
   })
 })

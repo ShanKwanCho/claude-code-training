@@ -13,7 +13,10 @@ export async function GET(
   const { id } = await params
   const card = cardById(id)
   if (!card) {
-    return NextResponse.json({ error: "No card with that id." }, { status: 404 })
+    return NextResponse.json(
+      { error: "No card with that id." },
+      { status: 404 },
+    )
   }
   return NextResponse.json({ card })
 }
@@ -32,7 +35,10 @@ export async function PATCH(
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: "Expected a JSON body." }, { status: 400 })
+    return NextResponse.json(
+      { error: "Expected a JSON body." },
+      { status: 400 },
+    )
   }
 
   const status = (body as { status?: unknown } | null)?.status

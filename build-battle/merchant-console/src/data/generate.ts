@@ -1,4 +1,4 @@
-import { generateCardNumber, lastFour } from "@/lib/cards"
+import { generateCardNumber, lastFour } from "@/lib/card-number"
 import { merchants } from "./merchants"
 import {
   Card,
